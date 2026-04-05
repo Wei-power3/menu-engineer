@@ -1,4 +1,7 @@
-* {
+/* =============================================
+   BASE RESET
+   ============================================= */
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -6,113 +9,424 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #f9fafb;
+  background: #f3f4f6;
   color: #111827;
+  font-size: 1rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
 
+/* =============================================
+   LAYOUT
+   ============================================= */
 .app {
   max-width: 960px;
   margin: 0 auto;
-  padding: 2rem 1rem 3rem;
+  padding: 1.5rem 1rem 4rem;
 }
 
+@media (min-width: 640px) {
+  .app {
+    padding: 2.5rem 1.5rem 4rem;
+  }
+}
+
+/* =============================================
+   HERO
+   ============================================= */
 .hero {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
 }
 
 .hero h1 {
-  margin-bottom: 0.5rem;
+  font-size: clamp(1.6rem, 5vw, 2.25rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.4rem;
 }
 
+.hero p {
+  color: #6b7280;
+  font-size: 1rem;
+  max-width: 52ch;
+}
+
+/* =============================================
+   FORM
+   ============================================= */
 .menu-form {
   background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
-  padding: 1rem;
+  padding: 1.25rem;
   display: grid;
-  gap: 0.75rem;
+  gap: 0.85rem;
 }
 
 .label {
   font-weight: 600;
-}
-
-.select,
-.textarea,
-.button {
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 1rem;
+  font-size: 0.95rem;
 }
 
 .select,
 .textarea {
   width: 100%;
-  padding: 0.65rem 0.75rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  background: #fff;
+  color: #111827;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
+.select:focus,
+.textarea:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 180px;
+  font-family: 'Menlo', 'Consolas', monospace;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+/* =============================================
+   BUTTONS
+   ============================================= */
 .button {
-  background: #111827;
-  color: #fff;
-  padding: 0.7rem 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.7rem 1.1rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  font-family: inherit;
   cursor: pointer;
+  transition: background 150ms ease, color 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+  white-space: nowrap;
+  /* Minimum 44px touch target */
+  min-height: 44px;
 }
 
 .button:disabled {
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
+/* Primary */
+.menu-form .button:not(.secondary) {
+  background: #111827;
+  color: #fff;
+  border-color: #111827;
+  width: 100%;
+}
+
+.menu-form .button:not(.secondary):hover:not(:disabled) {
+  background: #1f2937;
+}
+
+/* Secondary / outline */
 .button.secondary {
   background: #fff;
   color: #111827;
+  border-color: #d1d5db;
 }
 
-.status,
-.error {
-  margin-top: 1rem;
+.button.secondary:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #9ca3af;
 }
 
-.error {
-  color: #b91c1c;
+/* PDF button */
+.pdf-button {
+  background: #4f46e5;
+  color: #fff;
+  border-color: #4f46e5;
 }
 
-.results {
-  margin-top: 1.5rem;
+.pdf-button:hover:not(:disabled) {
+  background: #4338ca;
+  border-color: #4338ca;
+}
+
+/* =============================================
+   LOADING STATE
+   ============================================= */
+.loading-state {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-spinner {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e5e7eb;
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-spinner {
+    animation: none;
+    border-top-color: #e5e7eb;
+  }
+}
+
+/* =============================================
+   ERROR BOX
+   ============================================= */
+.error-box {
+  margin-top: 1.25rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
   display: grid;
-  gap: 1rem;
+  gap: 0.4rem;
+}
+
+.error-title {
+  font-weight: 600;
+  color: #991b1b;
+  font-size: 0.95rem;
+}
+
+.error-detail {
+  color: #7f1d1d;
+  font-size: 0.9rem;
+}
+
+.error-retry {
+  margin-top: 0.25rem;
+  justify-self: start;
+}
+
+/* =============================================
+   RESULTS HEADER
+   ============================================= */
+.results {
+  margin-top: 1.75rem;
+  display: grid;
+  gap: 1.25rem;
 }
 
 .results-header {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 1rem;
 }
 
+.results-summary {
+  margin-top: 0.3rem;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.results-summary strong {
+  color: #111827;
+}
+
+.results-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+/* =============================================
+   MATRIX GRID
+   ============================================= */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
   gap: 0.9rem;
 }
 
+/* =============================================
+   CARDS
+   ============================================= */
 .card {
   background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
-  padding: 0.9rem;
+  padding: 1rem 1rem;
   display: grid;
   gap: 0.6rem;
 }
 
+.card h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 0.1rem;
+}
+
+/* =============================================
+   ITEM CARDS
+   ============================================= */
 .item {
-  border-top: 1px dashed #d1d5db;
-  padding-top: 0.6rem;
+  border-top: 1px dashed #e5e7eb;
+  padding-top: 0.65rem;
   display: grid;
   gap: 0.3rem;
 }
 
+.item strong {
+  font-size: 0.95rem;
+}
+
+.item p {
+  font-size: 0.88rem;
+  color: #374151;
+}
+
 .muted {
   color: #6b7280;
-  font-size: 0.92rem;
+  font-size: 0.87rem;
+}
+
+/* =============================================
+   PRICE ADJUSTMENT MAP — TABLE
+   ============================================= */
+.card table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.card table th,
+.card table td {
+  text-align: left;
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid #f3f4f6;
+  white-space: nowrap;
+}
+
+.card table th {
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.card table th button {
+  background: none;
+  border: none;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  padding: 0;
+  white-space: nowrap;
+}
+
+.card table th button:hover {
+  color: #111827;
+}
+
+.card table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.card table tbody tr:hover td {
+  background: #f9fafb;
+}
+
+/* =============================================
+   ACTIONS LIST
+   ============================================= */
+.card ol[role="list"] {
+  list-style: none;
+  padding: 0;
+}
+
+.card ol[role="list"] li {
+  counter-increment: action-count;
+  display: grid;
+  gap: 0.2rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.card ol[role="list"] li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.card ol[role="list"] li strong {
+  font-size: 0.95rem;
+}
+
+.card ol[role="list"] li p {
+  font-size: 0.88rem;
+  color: #374151;
+}
+
+/* =============================================
+   MOBILE — 375px first
+   ============================================= */
+@media (max-width: 480px) {
+  .hero h1 {
+    font-size: 1.65rem;
+  }
+
+  .results-header {
+    flex-direction: column;
+  }
+
+  .results-actions {
+    width: 100%;
+  }
+
+  .results-actions .button {
+    flex: 1;
+    text-align: center;
+  }
+
+  .card {
+    padding: 0.85rem;
+  }
+
+  /* Table on mobile: let it scroll sideways */
+  .card > div[style] {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* =============================================
+   SECTION HEADINGS INSIDE MATRIX
+   ============================================= */
+section > h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
 }
