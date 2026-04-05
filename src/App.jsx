@@ -1,5 +1,8 @@
 import React, { useMemo, useState } from 'react'
 import MenuInputForm from './components/MenuInputForm'
+import AnalysisMatrix from './components/AnalysisMatrix'
+import PriceAdjustmentMap from './components/PriceAdjustmentMap'
+import ActionsList from './components/ActionsList'
 import useMenuAnalysis from './hooks/useMenuAnalysis'
 
 const CATEGORY_ORDER = ['Star', 'Puzzle', 'Plowhorse', 'Dog']
@@ -39,7 +42,10 @@ export default function App() {
     <div className="app">
       <header className="hero">
         <h1>Menu Engineer</h1>
-        <p>Paste your menu. Find out what's bleeding margin, what's underpriced, and what to cut.</p>
+        <p>
+          Paste your menu. Find out what&apos;s bleeding margin, what&apos;s underpriced,
+          and what to cut.
+        </p>
       </header>
 
       {!data && (
@@ -60,7 +66,17 @@ export default function App() {
       {data && (
         <section className="results" aria-live="polite">
           <div className="results-header">
-            <h2>Analysis Results</h2>
+            <div>
+              <h2>Analysis Results</h2>
+              <p>
+                {data.summary.totalItems} items analyzed • Average contribution margin:{' '}
+                <strong>
+                  {data.summary.currency === 'GBP' ? '£' : '$'}
+                  {Number(data.summary.averageContributionMargin).toFixed(2)}
+                </strong>
+              </p>
+            </div>
+
             <button
               type="button"
               className="button secondary"
@@ -72,38 +88,18 @@ export default function App() {
             </button>
           </div>
 
-          <p>
-            {data.summary.totalItems} items analyzed • Average contribution margin:{' '}
-            <strong>
-              {data.summary.currency === 'GBP' ? '£' : '$'}
-              {Number(data.summary.averageContributionMargin).toFixed(2)}
-            </strong>
-          </p>
+          <AnalysisMatrix
+            groupedItems={groupedItems}
+            currency={data.summary.currency}
+            categoryOrder={CATEGORY_ORDER}
+          />
 
-          <div className="grid">
-            {CATEGORY_ORDER.map((category) => (
-              <article key={category} className="card">
-                <h3>
-                  {category}s ({groupedItems[category].length})
-                </h3>
+          <PriceAdjustmentMap
+            items={data.items}
+            currency={data.summary.currency}
+          />
 
-                {groupedItems[category].length === 0 && <p className="muted">No items in this category.</p>}
-
-                {groupedItems[category].map((item) => (
-                  <div key={item.name} className="item">
-                    <strong>{item.name}</strong>
-                    <p>
-                      Price: {data.summary.currency === 'GBP' ? '£' : '$'}
-                      {item.price} · Margin: {data.summary.currency === 'GBP' ? '£' : '$'}
-                      {Number(item.contributionMargin).toFixed(2)}
-                    </p>
-                    <p>{item.action}</p>
-                    <p className="muted">{item.marketContext}</p>
-                  </div>
-                ))}
-              </article>
-            ))}
-          </div>
+          <ActionsList items={data.items} />
         </section>
       )}
     </div>
