@@ -11,7 +11,108 @@ body {
 }
 
 .app {
-  max-width: 900px;
+  max-width: 960px;
   margin: 0 auto;
-  padding: 2rem 1rem;
+  padding: 2rem 1rem 3rem;
+}
+
+.hero {
+  margin-bottom: 1.5rem;
+}
+
+.hero h1 {
+  margin-bottom: 0.5rem;
+}
+
+.menu-form {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.label {
+  font-weight: 600;
+}
+
+.select,
+.textarea,
+.button {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.select,
+.textarea {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+}
+
+.button {
+  background: #111827;
+  color: #fff;
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.button.secondary {
+  background: #fff;
+  color: #111827;
+}
+
+.status,
+.error {
+  margin-top: 1rem;
+}
+
+.error {
+  color: #b91c1c;
+}
+
+.results {
+  margin-top: 1.5rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.9rem;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 0.9rem;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.item {
+  border-top: 1px dashed #d1d5db;
+  padding-top: 0.6rem;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.muted {
+  color: #6b7280;
+  font-size: 0.92rem;
 }
