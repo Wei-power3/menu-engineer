@@ -19,7 +19,7 @@ export default async function handler(req, res) {
 
   const isUK = market === 'UK'
   const currency = isUK ? 'GBP' : 'USD'
-  const currencySymbol = isUK ? '\u00a3' : '$'
+  const currencySymbol = isUK ? '£' : '$'
   const marketLabel = isUK ? 'UK' : 'US'
 
   const ukComplianceInstruction = isUK
@@ -86,7 +86,7 @@ Rules:
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        model: 'claude-opus-4-5',
         max_tokens: 4096,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }]

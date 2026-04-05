@@ -15,8 +15,8 @@ export default function MenuInputForm({ menuText, market, onMenuTextChange, onMa
             onChange={(event) => onMarketChange(event.target.value)}
             disabled={loading}
           >
-            <option value="US">\ud83c\uddfa\ud83c\uddf8 United States (USD $)</option>
-            <option value="UK">\ud83c\uddec\ud83c\udde7 United Kingdom (GBP \u00a3)</option>
+            <option value="US">🇺🇸 United States (USD $)</option>
+            <option value="UK">🇬🇧 United Kingdom (GBP £)</option>
           </select>
         </div>
 
@@ -38,7 +38,7 @@ export default function MenuInputForm({ menuText, market, onMenuTextChange, onMa
           value={menuText}
           onChange={(event) => onMenuTextChange(event.target.value)}
           placeholder={market === 'UK'
-            ? 'Fish & Chips, \u00a316, 32% food cost\nChicken Tikka Masala, \u00a314, 28% food cost'
+            ? 'Fish & Chips, £16, 32% food cost\nChicken Tikka Masala, £14, 28% food cost'
             : 'Margherita Pizza, $14, 28% food cost\nTruffle Pasta, $22, 35% food cost'}
           rows={10}
           disabled={loading}
@@ -47,7 +47,7 @@ export default function MenuInputForm({ menuText, market, onMenuTextChange, onMa
       </div>
 
       <button type="submit" className="button submit-button" disabled={loading || !menuText.trim()}>
-        {loading ? 'Analyzing\u2026' : 'Analyze Menu'}
+        {loading ? 'Analyzing…' : 'Analyze Menu'}
       </button>
     </form>
   )
