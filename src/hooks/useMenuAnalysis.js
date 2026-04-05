@@ -19,7 +19,8 @@ export default function useMenuAnalysis() {
       })
 
       if (!response.ok) {
-        throw new Error(`Request failed with status ${response.status}`)
+        const errBody = await response.json().catch(() => ({}))
+        throw new Error(errBody.detail || errBody.error || `Request failed with status ${response.status}`)
       }
 
       const payload = await response.json()
