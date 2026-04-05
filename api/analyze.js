@@ -1,3 +1,6 @@
+// AI provider: Gemini (temporary — swap GEMINI_API_KEY for ANTHROPIC_API_KEY to revert to Claude)
+// To revert: replace the geminiResponse fetch block with the Claude block in git history.
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed. Use POST.' })
@@ -11,9 +14,9 @@ export default async function handler(req, res) {
     return
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY
+  const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) {
-    res.status(500).json({ error: 'Server configuration error: missing API key.' })
+    res.status(500).json({ error: 'Server configuration error: missing GEMINI_API_KEY.' })
     return
   }
 
@@ -78,40 +81,36 @@ Rules:
   const userPrompt = `Market: ${marketLabel}\nCurrency: ${currency}\n\nMenu:\n${menuText.trim()}`
 
   try {
-    const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 4096,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userPrompt }]
-      })
-    })
+    const geminiResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: systemPrompt }] },
+          contents: [{ parts: [{ text: userPrompt }] }],
+          generationConfig: { responseMimeType: 'application/json' }
+        })
+      }
+    )
 
-    if (!claudeResponse.ok) {
-      const errorBody = await claudeResponse.text()
-      console.error('Claude API error:', claudeResponse.status, errorBody)
-      // Surface the real error so we can debug
+    if (!geminiResponse.ok) {
+      const errorBody = await geminiResponse.text()
+      console.error('Gemini API error:', geminiResponse.status, errorBody)
       res.status(502).json({
-        error: `Anthropic API returned ${claudeResponse.status}`,
+        error: `Gemini API returned ${geminiResponse.status}`,
         detail: errorBody
       })
       return
     }
 
-    const claudeData = await claudeResponse.json()
-    const rawText = claudeData.content?.[0]?.text || ''
+    const geminiData = await geminiResponse.json()
+    const rawText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || ''
 
     let parsed
     try {
       parsed = JSON.parse(rawText)
     } catch {
-      // Claude occasionally wraps JSON in backticks — strip and retry
       const stripped = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
       parsed = JSON.parse(stripped)
     }
