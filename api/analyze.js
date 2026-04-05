@@ -86,7 +86,7 @@ Rules:
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-opus-4-5',
+        model: 'claude-3-5-sonnet-20241022',
         max_tokens: 4096,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }]
@@ -96,7 +96,11 @@ Rules:
     if (!claudeResponse.ok) {
       const errorBody = await claudeResponse.text()
       console.error('Claude API error:', claudeResponse.status, errorBody)
-      res.status(502).json({ error: 'Analysis service error. Please try again.' })
+      // Surface the real error so we can debug
+      res.status(502).json({
+        error: `Anthropic API returned ${claudeResponse.status}`,
+        detail: errorBody
+      })
       return
     }
 
@@ -115,6 +119,6 @@ Rules:
     res.status(200).json(parsed)
   } catch (err) {
     console.error('Handler error:', err)
-    res.status(500).json({ error: 'Something went wrong. Please try again.' })
+    res.status(500).json({ error: err.message || 'Something went wrong. Please try again.' })
   }
 }
