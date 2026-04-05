@@ -73,11 +73,21 @@ export default function App() {
             </div>
           </div>
 
+          <p className="muted" style={{ fontSize: '0.8rem', marginBottom: '8px' }}>
+            ⚠️ Popularity is estimated from price position, not actual sales data. For higher accuracy, sales volume input is planned for a future update.
+          </p>
+
           <AnalysisMatrix
             groupedItems={groupedItems}
             currency={data.summary.currency}
+            avgCM={data.summary.averageContributionMargin}
+            avgPrice={data.summary.averagePrice}
             categoryOrder={CATEGORY_ORDER}
           />
+
+          <p className="muted" style={{ fontSize: '0.78rem', marginTop: '8px' }}>
+            Analysis based on the Kasavana &amp; Smith (1982) menu engineering framework — the industry standard since Cornell University&apos;s School of Hotel Administration.
+          </p>
 
           <PriceAdjustmentMap
             items={data.items}

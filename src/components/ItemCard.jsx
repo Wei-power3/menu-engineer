@@ -10,8 +10,14 @@ function getRecommendationLabel(recommendation) {
   return 'Hold price'
 }
 
-export default function ItemCard({ item, currency }) {
+export default function ItemCard({ item, currency, avgCM, avgPrice }) {
   const symbol = getCurrencySymbol(currency)
+
+  const marginCmp = item.contributionMargin >= avgCM ? 'above' : 'below'
+  const popularityCmp = item.price <= avgPrice ? 'below or equal to' : 'above'
+  const reasoning =
+    `Margin ${symbol}${Number(item.contributionMargin).toFixed(2)} is ${marginCmp} menu avg ${symbol}${Number(avgCM).toFixed(2)} → ${item.marginLevel} margin. ` +
+    `Price ${symbol}${Number(item.price).toFixed(2)} is ${popularityCmp} menu avg ${symbol}${Number(avgPrice).toFixed(2)} → estimated ${item.popularityLevel} popularity.`
 
   return (
     <div className="item">
@@ -27,6 +33,8 @@ export default function ItemCard({ item, currency }) {
       </p>
 
       <p>{item.action}</p>
+
+      <p className="muted" style={{ fontSize: '0.78rem', marginTop: '4px' }}>{reasoning}</p>
 
       {item.marketContext && <p className="muted">{item.marketContext}</p>}
 

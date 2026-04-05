@@ -111,10 +111,6 @@ export default function MenuInputForm({ market, onMarketChange, onSubmit }) {
           + Add item
         </button>
 
-        <p className="input-hint">
-          Popularity is estimated from relative price — cheaper items typically sell more.
-        </p>
-
         <button
           type="submit"
           className="button submit-button"

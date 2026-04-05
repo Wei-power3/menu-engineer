@@ -63,6 +63,7 @@ export function analyzeMenu(items, market) {
   const summary = {
     totalItems: classified.length,
     averageContributionMargin: parseFloat(avgCM.toFixed(2)),
+    averagePrice: parseFloat(avgPrice.toFixed(2)),
     currency,
     stars:       classified.filter((i) => i.category === 'Star').length,
     puzzles:     classified.filter((i) => i.category === 'Puzzle').length,

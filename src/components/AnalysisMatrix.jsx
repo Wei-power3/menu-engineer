@@ -11,6 +11,8 @@ const CATEGORY_LABELS = {
 export default function AnalysisMatrix({
   groupedItems,
   currency,
+  avgCM,
+  avgPrice,
   categoryOrder = ['Star', 'Puzzle', 'Plowhorse', 'Dog']
 }) {
   return (
@@ -35,6 +37,8 @@ export default function AnalysisMatrix({
                   key={`${category}-${item.name}`}
                   item={item}
                   currency={currency}
+                  avgCM={avgCM}
+                  avgPrice={avgPrice}
                 />
               ))}
             </article>
