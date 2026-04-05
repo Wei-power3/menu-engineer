@@ -7,12 +7,12 @@
 | **Project name** | Menu Engineer |
 | **Tagline** | Paste your menu. Find out what's bleeding margin, what's underpriced, and what to cut. |
 | **Hackathon type** | Solo, 2 days |
-| **Start date** | TBD |
+| **Start date** | April 2026 |
 | **Definition of done** | Released publicly, real users can access and use it without friction |
 | **Monetization goal** | $100/month recurring |
 | **Primary market** | United States (v1) |
 | **Secondary market** | United Kingdom (v1 toggle) |
-| **Status** | Research complete — build not started |
+| **Status** | ✅ v1 shipped — April 2026 |
 | **Last updated** | April 2026 |
 
 ---
@@ -26,7 +26,7 @@
 
 ## Definition of Done (for the User)
 
-A restaurant owner pastes or uploads their menu with rough food cost estimates and gets back:
+A restaurant owner pastes their menu with rough food cost estimates and gets back:
 
 1. Every item plotted on the **Stars / Puzzles / Plowhorses / Dogs matrix** (visual)
 2. A **price adjustment map** — which items to raise, hold, or cut
@@ -34,6 +34,8 @@ A restaurant owner pastes or uploads their menu with rough food cost estimates a
 4. A **downloadable PDF report** they can act on immediately
 
 No sign-up. No credit card. Works in a browser. Under 60 seconds.
+
+✅ All four outputs are live in v1.
 
 ### v1 Known Limitation
 
@@ -65,15 +67,16 @@ Full conviction requires external benchmarks (Phase 2+). See the phased roadmap 
 | Apr 2026 | Free with pay-per-report model | Zero friction for discovery; monetise only users who want to save/share output |
 | Apr 2026 | Claude training data as v1 market context | Adds lightweight external anchor per item at zero build cost; USDA AMS replaces this in Phase 2 |
 | Apr 2026 | USDA AMS deferred to Phase 2 (not v1) | Free, legally clean, weekly commodity data — high-value but outside the 48-hour window |
+| Apr 2026 | Stripe payment gate deferred post-v1 | Ship free first, validate real usage, then gate PDF download |
 
 ---
 
 ## What Success Looks Like at 48 Hours
 
-- [ ] Tool is live at a public URL
+- [x] Tool is live at a public URL
 - [ ] At least 1 person who is not me has used it
 - [ ] At least 1 post/share in a hospitality community (Reddit, Facebook group, or forum)
-- [ ] Output is visually clear enough that someone understands it without instructions
+- [x] Output is visually clear enough that someone understands it without instructions
 
 ---
 
@@ -81,11 +84,11 @@ Full conviction requires external benchmarks (Phase 2+). See the phased roadmap 
 
 Research finding: *"Internal analysis finds the problem; external benchmarks create conviction to act."* v1 delivers the diagnosis. The phases below add conviction.
 
-| Phase | What's added | Data source | Build cost |
-|---|---|---|---|
-| **v1** | Internal matrix + Claude market-context line per item | Claude training knowledge (rough) | ✅ In scope |
-| **Phase 2** | Weekly ingredient cost trends per item ("beef up 6% this month") | USDA AMS API — free, no key, legally clean | Low |
-| **Phase 3** | Local price range per category built from user-uploaded competitor menus | User provides (no scraping liability) | Medium |
-| **Phase 4** | Live district-level competitor pricing | Datassential / RMS (licensed) | High — only if paying users justify cost |
+| Phase | What's added | Data source | Build cost | Status |
+|---|---|---|---|---|
+| **v1** | Internal matrix + Claude market-context line per item | Claude training knowledge (rough) | ✅ In scope | ✅ Shipped |
+| **Phase 2** | Weekly ingredient cost trends per item ("beef up 6% this month") | USDA AMS API — free, no key, legally clean | Low | ⏳ Next |
+| **Phase 3** | Local price range per category built from user-uploaded competitor menus | User provides (no scraping liability) | Medium | ⏳ Pending |
+| **Phase 4** | Live district-level competitor pricing | Datassential / RMS (licensed) | High — only if paying users justify cost | ⏳ Pending |
 
 Phase 2 is the highest-value next step after v1 ships. It costs nothing in data licensing and directly addresses the research finding that cost-side signals (not just internal margin) are what trigger operator action.

@@ -25,7 +25,20 @@ This tool gives every owner access to the same analysis, for free, in under a mi
 1. Paste your menu items with prices and estimated food cost %
 2. AI classifies every item as Star / Puzzle / Plowhorse / Dog
 3. Get a visual matrix + plain-English actions per item
-4. Export a printable pricing report
+4. Download a PDF report
+
+---
+
+## Stack
+
+| Layer | Choice |
+|---|---|
+| Frontend | React 18 + Vite |
+| Styling | Plain CSS |
+| AI engine | Claude claude-sonnet-4-6 (Anthropic) |
+| API layer | Vercel serverless functions |
+| Deployment | Vercel (auto-deploy on push to main) |
+| PDF | jsPDF (client-side) |
 
 ---
 
@@ -35,14 +48,36 @@ This tool gives every owner access to the same analysis, for free, in under a mi
 |---|---|
 | [00 — Meta](docs/00-meta.md) | ✅ Ready |
 | [01 — Problem Research](docs/01-problem-research.md) | ✅ Ready |
-| 02 — Solution Design | 🔄 In progress |
-| 03 — Build Plan | ⏳ Pending |
+| [02 — Benchmark Data Research](docs/02-benchmark-data-research.md) | ✅ Ready |
+| [03 — Build Plan](docs/03-build-plan.md) | ✅ Ready |
 
 ---
 
-## Status
+## Build Status
 
-`Research complete · Build not started · Solo hackathon project`
+| Phase | What | Status |
+|---|---|---|
+| 1 | Scaffold — Vite + React, Vercel, GitHub | ✅ Done |
+| 2 | API layer — Claude serverless function | ✅ Done |
+| 3 | Input + loading — form, hook, round-trip | ✅ Done |
+| 4 | Results — Matrix, ItemCard, PriceAdjustmentMap, ActionsList | ✅ Done |
+| 5 | Polish — PDF download, ErrorMessage, mobile CSS | ✅ Done |
+| 6 | UK toggle — DMCCA 2024 compliance notes | ✅ Done |
+
+**v1 shipped — April 2026**
+
+---
+
+## Local Development
+
+> You need Node.js installed. If you're on iPad/iPhone, use the Vercel dashboard — no local setup required.
+
+```bash
+npm install
+npm run dev
+```
+
+Set `ANTHROPIC_API_KEY` as an environment variable in Vercel (Settings → Environment Variables). Never put it in code.
 
 ---
 

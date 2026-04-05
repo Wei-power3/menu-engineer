@@ -1,41 +1,39 @@
 # 03 — Build Plan
 
 > Last updated: 2026-04-05
-> Status: v1 draft — expect frequent updates as build progresses.
+> Status: ✅ v1 complete — all 6 phases shipped.
 > Research finding: *"Internal analysis finds the problem; external benchmarks create conviction to act."* — see `02-benchmark-data-research.md`
 
 ---
 
-## What We're Building
+## What We Built
 
-A React web app where restaurant owners paste their menu with food cost estimates and receive a menu engineering analysis (Stars / Puzzles / Plowhorses / Dogs) in under 60 seconds. No sign-up. Pay-per-report to download PDF.
+A React web app where restaurant owners paste their menu with food cost estimates and receive a menu engineering analysis (Stars / Puzzles / Plowhorses / Dogs) in under 60 seconds. No sign-up. PDF download included.
 
 ---
 
-## Folder Structure (target state)
+## Folder Structure (current state)
 
 ```
 menu-engineer/
 ├── api/
-│   └── analyze.js              ← Vercel serverless fn (Claude API lives here)
+│   └── analyze.js              ✅ Vercel serverless fn — calls Claude claude-sonnet-4-6
 ├── src/
 │   ├── components/
-│   │   ├── MenuInputForm.jsx       ← landing page / input
-│   │   ├── AnalysisMatrix.jsx      ← 2×2 Stars/Puzzles/Plowhorses/Dogs grid
-│   │   ├── ItemCard.jsx            ← reusable card inside the matrix
-│   │   ├── PriceAdjustmentMap.jsx  ← sortable table of recommendations
-│   │   ├── ActionsList.jsx         ← plain-English advice per item
-│   │   ├── LoadingSpinner.jsx
-│   │   ├── ErrorMessage.jsx
-│   │   └── PdfDownloadButton.jsx
+│   │   ├── MenuInputForm.jsx       ✅ US/UK market selector, DMCCA compliance banner
+│   │   ├── AnalysisMatrix.jsx      ✅ 2×2 Stars/Puzzles/Plowhorses/Dogs grid
+│   │   ├── ItemCard.jsx            ✅ reusable card — price, margin, action, market context
+│   │   ├── PriceAdjustmentMap.jsx  ✅ sortable table of all items ranked by margin
+│   │   ├── ActionsList.jsx         ✅ plain-English actions, lowest margin shown first
+│   │   ├── LoadingSpinner          ✅ inline in App.jsx loading state
+│   │   ├── ErrorMessage.jsx        ✅ red alert box with retry button
+│   │   └── PdfDownloadButton.jsx   ✅ jsPDF client-side — full report with all sections
 │   ├── hooks/
-│   │   └── useMenuAnalysis.js  ← fetch lifecycle, loading/error state
-│   ├── utils/
-│   │   ├── formatCurrency.js   ← US $ / UK £
-│   │   └── pdfGenerator.js     ← jsPDF + html2canvas
-│   ├── App.jsx                 ← view state: 'input' | 'loading' | 'results'
+│   │   └── useMenuAnalysis.js      ✅ fetch lifecycle, loading/error state
+│   ├── App.jsx                     ✅ view state: input | loading | results
+│   ├── App.css                     ✅ mobile-first, 375px breakpoints, 44px touch targets
 │   └── main.jsx
-├── vercel.json                 ← routes /api/* to serverless functions
+├── vercel.json                     ✅ routes /api/* to serverless functions
 ├── vite.config.js
 └── package.json
 ```
@@ -61,8 +59,6 @@ Frontend renders:
 
 ## JSON Contract (Claude → UI)
 
-Every UI component reads from this shape. Claude must return this exactly.
-
 ```json
 {
   "summary": {
@@ -85,7 +81,7 @@ Every UI component reads from this shape. Claude must return this exactly.
       "popularityLevel": "high",
       "marginLevel": "high",
       "action": "Keep price, feature prominently on menu.",
-      "marketContext": "Pasta dishes in US casual dining typically range $18–26. Your price is well-positioned.",
+      "marketContext": "Pasta dishes in US casual dining typically range $18-26. Your price is well-positioned.",
       "priceRecommendation": "hold",
       "ukComplianceNote": null
     }
@@ -99,37 +95,18 @@ Matrix placement logic:
 - **Puzzles** → `popularityLevel: low` + `marginLevel: high`
 - **Dogs** → `popularityLevel: low` + `marginLevel: low`
 
-The `marketContext` field is a v1 mechanism to add a lightweight external anchor per item. Claude draws on its training knowledge to provide a rough local price range by category and market (US or UK). This is not live data — it's a best-effort reference. It will be replaced by USDA AMS data in Phase 2.
-
 ---
 
-## Build Sequence
+## Build Sequence — Completed
 
-Each phase is independently testable before moving to the next.
-
-| Phase | What you build | Done when... |
+| Phase | What was built | Status |
 |---|---|---|
-| **1. Scaffold** | Vite+React project, push to GitHub, connect Vercel | Live URL exists (even if blank) |
-| **2. API layer** | `api/analyze.js` with Claude prompt (including market context instruction) | Paste menu in console, get JSON back with `marketContext` field populated |
-| **3. Input + loading** | `MenuInputForm`, `LoadingSpinner`, `useMenuAnalysis` hook | Full round-trip works, result in console |
-| **4. Results** | `AnalysisMatrix`, `ItemCard`, `PriceAdjustmentMap`, `ActionsList` | Real Claude output displays on screen, `marketContext` visible per item |
-| **5. Polish** | `PdfDownloadButton`, mobile CSS, `ErrorMessage` | Works on iPhone Safari |
-| **6. UK toggle** | Market selector, UK prompt branch, compliance notes | UK mode shows £ and DMCCA 2024 notes |
-
-### Claude Prompt — Market Context Instruction (Phase 2 of the prompt, not the roadmap)
-
-The `api/analyze.js` prompt must instruct Claude to populate `marketContext` per item. Add this to the prompt:
-
-```
-For each item, add a "marketContext" field: one sentence using your knowledge of typical
-US (or UK) restaurant pricing for this category. Format:
-"[Category] items in [market] [restaurant tier] typically range [low]–[high].
-Your price is [above / below / within] this range."
-Be honest about uncertainty — if the category is unusual, say so.
-This is a rough reference, not live data.
-```
-
-This costs nothing, requires no API integration, and directly addresses the research finding that operators need an external anchor to act on repricing recommendations.
+| **1. Scaffold** | Vite+React project, pushed to GitHub, connected Vercel | ✅ Done |
+| **2. API layer** | `api/analyze.js` with Claude prompt + marketContext instruction | ✅ Done |
+| **3. Input + loading** | `MenuInputForm`, `LoadingSpinner`, `useMenuAnalysis` hook | ✅ Done |
+| **4. Results** | `AnalysisMatrix`, `ItemCard`, `PriceAdjustmentMap`, `ActionsList` | ✅ Done |
+| **5. Polish** | `PdfDownloadButton`, mobile CSS, `ErrorMessage` | ✅ Done |
+| **6. UK toggle** | Market selector, UK prompt branch, DMCCA 2024 compliance notes | ✅ Done |
 
 ---
 
@@ -139,8 +116,8 @@ This costs nothing, requires no API integration, and directly addresses the rese
 |---|---|---|
 | Build tool | Vite (not CRA) | Faster builds, better Vercel support |
 | CSS | Plain CSS, no framework | Smaller bundle, no dependency debt |
-| Routing | None (view state) | Single-page flow doesn't need a router |
-| PDF | jsPDF + html2canvas | Runs client-side, no server needed |
+| Routing | None (view state in App.jsx) | Single-page flow doesn't need a router |
+| PDF | jsPDF (dynamic import) | Runs client-side, no server needed, lazy-loaded to keep initial bundle small |
 | API key security | Vercel env var + serverless fn only | Key never touches the frontend bundle |
 
 ---
@@ -176,6 +153,9 @@ This costs nothing, requires no API integration, and directly addresses the rese
 
 Phased in priority order based on research findings (see `02-benchmark-data-research.md`).
 
+### Immediate — Stripe payment gate
+Add payment before PDF download. Stub comment `// TODO: PAYMENT GATE` is already in `PdfDownloadButton.jsx`.
+
 ### Phase 2 — USDA AMS ingredient cost signals
 Add weekly commodity price trends to each item's output. Replaces the rough Claude `marketContext` with a real cost-side anchor.
 
@@ -193,7 +173,7 @@ Evaluate Datassential or RMS licensed data. Only justified once paying users and
 
 ---
 
-## Deliberately Deferred (no phase assigned)
+## Deliberately Deferred
 
 - Stripe payment gate on PDF download (stub comment left in code as `// TODO: PAYMENT GATE`)
 - Saved reports / database (Supabase when needed)
@@ -204,7 +184,7 @@ Evaluate Datassential or RMS licensed data. Only justified once paying users and
 
 ---
 
-## Test Menu (use this to verify each phase)
+## Test Menu
 
 ```
 Margherita Pizza, $14, 28% food cost
