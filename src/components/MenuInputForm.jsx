@@ -1,54 +1,130 @@
-import React from 'react'
+import React, { useState } from 'react'
 
-export default function MenuInputForm({ menuText, market, onMenuTextChange, onMarketChange, onSubmit, loading }) {
+let nextId = 1
+const makeRow = () => ({ id: nextId++, name: '', price: '', foodCostPct: '' })
+
+const INITIAL_ROWS = [makeRow(), makeRow(), makeRow()]
+
+export default function MenuInputForm({ market, onMarketChange, onSubmit }) {
+  const [rows, setRows] = useState(INITIAL_ROWS)
+
+  const updateRow = (id, field, value) =>
+    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, [field]: value } : r)))
+
+  const addRow = () => setRows((prev) => [...prev, makeRow()])
+
+  const removeRow = (id) =>
+    setRows((prev) => (prev.length > 1 ? prev.filter((r) => r.id !== id) : prev))
+
+  const validRows = rows.filter(
+    (r) => r.name.trim() && r.price !== '' && r.foodCostPct !== ''
+  )
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (validRows.length < 2) return
+    const items = validRows.map((r) => ({
+      name: r.name.trim(),
+      price: parseFloat(r.price),
+      foodCostPct: parseFloat(r.foodCostPct),
+    }))
+    onSubmit(items, market)
+  }
+
+  const sym = market === 'UK' ? '£' : '$'
+
   return (
-    <form className="menu-form" onSubmit={onSubmit}>
-      <div className="form-market">
-        <div className="form-field">
-          <label htmlFor="market" className="label">
-            Market
-          </label>
-          <select
-            id="market"
-            className="select"
-            value={market}
-            onChange={(event) => onMarketChange(event.target.value)}
-            disabled={loading}
-          >
-            <option value="US">🇺🇸 United States (USD $)</option>
-            <option value="UK">🇬🇧 United Kingdom (GBP £)</option>
-          </select>
+    <div className="input-page">
+      <div className="market-toggle">
+        <button
+          type="button"
+          className={`toggle-btn${market === 'US' ? ' active' : ''}`}
+          onClick={() => onMarketChange('US')}
+        >
+          🇺🇸 US
+        </button>
+        <button
+          type="button"
+          className={`toggle-btn${market === 'UK' ? ' active' : ''}`}
+          onClick={() => onMarketChange('UK')}
+        >
+          🇬🇧 UK
+        </button>
+      </div>
+
+      {market === 'UK' && (
+        <div className="uk-notice" role="note">
+          <strong>DMCCA 2024 active.</strong> Service charges must be included in displayed prices from April 2025.
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="input-form">
+        <div className="form-table">
+          <div className="form-header">
+            <span>Item name</span>
+            <span>Price ({sym})</span>
+            <span>Food cost %</span>
+            <span />
+          </div>
+
+          {rows.map((row) => (
+            <div key={row.id} className="form-row">
+              <input
+                type="text"
+                placeholder="e.g. House Burger"
+                value={row.name}
+                onChange={(e) => updateRow(row.id, 'name', e.target.value)}
+                aria-label="Item name"
+              />
+              <input
+                type="number"
+                placeholder="16.00"
+                min="0.01"
+                step="0.01"
+                value={row.price}
+                onChange={(e) => updateRow(row.id, 'price', e.target.value)}
+                aria-label="Price"
+              />
+              <input
+                type="number"
+                placeholder="40"
+                min="1"
+                max="99"
+                step="0.1"
+                value={row.foodCostPct}
+                onChange={(e) => updateRow(row.id, 'foodCostPct', e.target.value)}
+                aria-label="Food cost percentage"
+              />
+              <button
+                type="button"
+                className="remove-row-btn"
+                onClick={() => removeRow(row.id)}
+                aria-label="Remove row"
+              >
+                ×
+              </button>
+            </div>
+          ))}
         </div>
 
-        {market === 'UK' && (
-          <div className="uk-notice" role="note">
-            <strong>DMCCA 2024 active.</strong> Service charges must be included in displayed prices from April 2025. Your report will flag any compliance concerns per item.
-          </div>
-        )}
-      </div>
+        <button type="button" className="add-row-btn" onClick={addRow}>
+          + Add item
+        </button>
 
-      <div className="form-field">
-        <label htmlFor="menuText" className="label">
-          Paste your menu items
-        </label>
-        <p className="form-hint">One item per line &mdash; name, price, food cost %</p>
-        <textarea
-          id="menuText"
-          className="textarea"
-          value={menuText}
-          onChange={(event) => onMenuTextChange(event.target.value)}
-          placeholder={market === 'UK'
-            ? 'Fish & Chips, £16, 32% food cost\nChicken Tikka Masala, £14, 28% food cost'
-            : 'Margherita Pizza, $14, 28% food cost\nTruffle Pasta, $22, 35% food cost'}
-          rows={10}
-          disabled={loading}
-          aria-describedby="menuText-hint"
-        />
-      </div>
+        <p className="input-hint">
+          Popularity is estimated from relative price — cheaper items typically sell more.
+        </p>
 
-      <button type="submit" className="button submit-button" disabled={loading || !menuText.trim()}>
-        {loading ? 'Analyzing…' : 'Analyze Menu'}
-      </button>
-    </form>
+        <button
+          type="submit"
+          className="button submit-button"
+          disabled={validRows.length < 2}
+        >
+          {validRows.length >= 2
+            ? `Analyse ${validRows.length} items`
+            : 'Add at least 2 items to analyse'}
+        </button>
+      </form>
+    </div>
   )
 }

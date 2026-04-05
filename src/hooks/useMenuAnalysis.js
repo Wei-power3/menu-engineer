@@ -1,44 +1,25 @@
 import { useState } from 'react'
+import { analyzeMenu } from '../utils/menuAnalysis'
 
 export default function useMenuAnalysis() {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
   const [data, setData] = useState(null)
+  const [error, setError] = useState('')
 
-  const analyzeMenu = async ({ menuText, market }) => {
-    setLoading(true)
-    setError('')
-
+  const runAnalysis = (items, market) => {
     try {
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ menuText, market })
-      })
-
-      if (!response.ok) {
-        const errBody = await response.json().catch(() => ({}))
-        throw new Error(errBody.detail || errBody.error || `Request failed with status ${response.status}`)
-      }
-
-      const payload = await response.json()
-      setData(payload)
-      return payload
-    } catch (requestError) {
-      setError(requestError.message || 'Something went wrong while analyzing your menu.')
-      throw requestError
-    } finally {
-      setLoading(false)
+      const result = analyzeMenu(items, market)
+      setData(result)
+      setError('')
+    } catch (err) {
+      setError(err.message || 'Analysis failed. Please check your inputs.')
     }
   }
 
   return {
-    loading,
-    error,
     data,
-    analyzeMenu,
-    clearData: () => setData(null)
+    error,
+    loading: false, // instant — no async call
+    analyzeMenu: runAnalysis,
+    clearData: () => { setData(null); setError('') },
   }
 }

@@ -10,9 +10,8 @@ import useMenuAnalysis from './hooks/useMenuAnalysis'
 const CATEGORY_ORDER = ['Star', 'Puzzle', 'Plowhorse', 'Dog']
 
 export default function App() {
-  const [menuText, setMenuText] = useState('')
   const [market, setMarket] = useState('US')
-  const { data, error, loading, analyzeMenu, clearData } = useMenuAnalysis()
+  const { data, error, analyzeMenu, clearData } = useMenuAnalysis()
 
   const groupedItems = useMemo(() => {
     const groups = { Star: [], Puzzle: [], Plowhorse: [], Dog: [] }
@@ -23,13 +22,9 @@ export default function App() {
     return groups
   }, [data])
 
-  const handleSubmit = async (event) => {
-    event.preventDefault()
-    await analyzeMenu({ menuText, market })
-  }
-
-  const handleRetry = () => {
-    clearData()
+  const handleSubmit = (items, selectedMarket) => {
+    setMarket(selectedMarket)
+    analyzeMenu(items, selectedMarket)
   }
 
   return (
@@ -44,25 +39,13 @@ export default function App() {
 
       {!data && (
         <MenuInputForm
-          menuText={menuText}
           market={market}
-          onMenuTextChange={setMenuText}
           onMarketChange={setMarket}
           onSubmit={handleSubmit}
-          loading={loading}
         />
       )}
 
-      {loading && (
-        <div className="loading-state" role="status" aria-live="polite">
-          <span className="loading-spinner" aria-hidden="true" />
-          <p>Analyzing your menu&hellip;</p>
-        </div>
-      )}
-
-      {error && !loading && (
-        <ErrorMessage message={error} onRetry={handleRetry} />
-      )}
+      {error && <ErrorMessage message={error} onRetry={clearData} />}
 
       {data && (
         <section className="results" aria-live="polite">
