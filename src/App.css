@@ -525,7 +525,7 @@ section > h3 {
 
 .form-header {
   display: grid;
-  grid-template-columns: 1fr 110px 110px 36px;
+  grid-template-columns: 1fr 110px 110px 36px 44px;
   gap: 0.5rem;
   padding: 0.55rem 0.75rem;
   background: #f9fafb;
@@ -539,7 +539,7 @@ section > h3 {
 
 .form-row {
   display: grid;
-  grid-template-columns: 1fr 110px 110px 36px;
+  grid-template-columns: 1fr 110px 110px 36px 44px;
   gap: 0.5rem;
   padding: 0.45rem 0.75rem;
   border-bottom: 1px solid #f3f4f6;
@@ -622,13 +622,196 @@ section > h3 {
 @media (max-width: 480px) {
   .form-header,
   .form-row {
-    grid-template-columns: 1fr 85px 85px 28px;
-    gap: 0.35rem;
+    grid-template-columns: 1fr 72px 72px 26px 36px;
+    gap: 0.3rem;
     padding: 0.4rem 0.5rem;
   }
 
   .form-row input {
-    padding: 0.4rem 0.4rem;
-    font-size: 0.82rem;
+    padding: 0.38rem 0.35rem;
+    font-size: 0.8rem;
   }
+
+  .calc-toggle-btn {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.3rem;
+  }
+}
+
+/* =============================================
+   RESTAURANT TYPE SELECTOR
+   ============================================= */
+.type-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.type-selector label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.type-selector select {
+  flex: 1;
+  min-width: 0;
+  padding: 0.45rem 0.75rem;
+  border: 1.5px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 0.875rem;
+  color: #111827;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.type-selector select:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+}
+
+/* =============================================
+   SCAN TOOLBAR
+   ============================================= */
+.form-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.form-toolbar-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.scan-btn {
+  padding: 0.4rem 0.85rem;
+  border: 1.5px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  color: #374151;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.scan-btn:hover:not(:disabled) {
+  border-color: #6366f1;
+  color: #6366f1;
+}
+
+.scan-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.scan-message {
+  padding: 0.55rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+}
+
+.scan-message--success {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+}
+
+.scan-message--error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
+/* =============================================
+   FORM HEADER — COST COLUMN WITH HINT
+   ============================================= */
+.form-header-cost {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.form-cost-hint {
+  font-size: 0.68rem;
+  font-weight: 400;
+  color: #9ca3af;
+  text-transform: none;
+  letter-spacing: 0;
+  line-height: 1.2;
+}
+
+/* =============================================
+   COST CELL — CALC MODE
+   ============================================= */
+.cost-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cost-cell input {
+  width: 100%;
+}
+
+.calc-display {
+  font-size: 0.72rem;
+  color: #6b7280;
+  padding-left: 2px;
+  line-height: 1.3;
+}
+
+.calc-display--warn {
+  color: #d97706;
+}
+
+/* =============================================
+   CALC TOGGLE BUTTON
+   ============================================= */
+.calc-toggle-btn {
+  padding: 0.3rem 0.4rem;
+  border: 1.5px solid #d1d5db;
+  border-radius: 5px;
+  background: #fff;
+  color: #6b7280;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  justify-self: center;
+}
+
+.calc-toggle-btn:hover {
+  border-color: #6366f1;
+  color: #6366f1;
+}
+
+.calc-toggle-btn.active {
+  background: #eef2ff;
+  border-color: #6366f1;
+  color: #4f46e5;
+}
+
+/* =============================================
+   HIGHLIGHTED EMPTY FIELD (after scan)
+   ============================================= */
+.input-highlight {
+  border-color: #f59e0b !important;
+  background: #fffbeb !important;
+}
+
+.input-highlight:focus {
+  border-color: #d97706 !important;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2) !important;
 }
