@@ -1,46 +1,3 @@
-function parseMenuText(menuText) {
-  const lines = menuText
-    .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean)
-
-  return lines.map((line, index) => {
-    const parts = line.split(',').map((part) => part.trim())
-    const name = parts[0] || `Item ${index + 1}`
-
-    const priceMatch = line.match(/\$?\s?(\d+(?:\.\d+)?)/)
-    const foodCostMatch = line.match(/(\d+(?:\.\d+)?)\s?%/)
-
-    const price = priceMatch ? Number(priceMatch[1]) : 12
-    const foodCostPct = foodCostMatch ? Number(foodCostMatch[1]) : 30
-
-    return {
-      name,
-      price,
-      foodCostPct
-    }
-  })
-}
-
-function categorize(index) {
-  const categories = ['Star', 'Puzzle', 'Plowhorse', 'Dog']
-  return categories[index % categories.length]
-}
-
-function levelsForCategory(category) {
-  if (category === 'Star') return { popularityLevel: 'high', marginLevel: 'high' }
-  if (category === 'Puzzle') return { popularityLevel: 'low', marginLevel: 'high' }
-  if (category === 'Plowhorse') return { popularityLevel: 'high', marginLevel: 'low' }
-  return { popularityLevel: 'low', marginLevel: 'low' }
-}
-
-function actionForCategory(category) {
-  if (category === 'Star') return 'Keep price, feature prominently on menu.'
-  if (category === 'Puzzle') return 'Test stronger placement or naming to increase orders.'
-  if (category === 'Plowhorse') return 'Consider a small price increase or portion tuning.'
-  return 'Consider removal, redesign, or limited-time repositioning.'
-}
-
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed. Use POST.' })
@@ -54,48 +11,110 @@ export default async function handler(req, res) {
     return
   }
 
-  const parsedItems = parseMenuText(menuText)
-  const currency = market === 'UK' ? 'GBP' : 'USD'
-
-  const items = parsedItems.map((item, index) => {
-    const foodCostAmount = Number(((item.price * item.foodCostPct) / 100).toFixed(2))
-    const contributionMargin = Number((item.price - foodCostAmount).toFixed(2))
-    const category = categorize(index)
-    const { popularityLevel, marginLevel } = levelsForCategory(category)
-
-    return {
-      name: item.name,
-      price: item.price,
-      foodCostPct: item.foodCostPct,
-      foodCostAmount,
-      contributionMargin,
-      category,
-      popularityLevel,
-      marginLevel,
-      action: actionForCategory(category),
-      marketContext:
-        market === 'UK'
-          ? 'Comparable UK casual dining items often vary by neighborhood and concept; treat this as directional context.'
-          : 'Comparable US casual dining items often vary by city and concept; treat this as directional context.',
-      priceRecommendation: category === 'Plowhorse' ? 'increase' : category === 'Dog' ? 'rethink' : 'hold',
-      ukComplianceNote:
-        market === 'UK'
-          ? 'Check service-charge presentation aligns with DMCCA 2024 guidance.'
-          : null
-    }
-  })
-
-  const summary = {
-    totalItems: items.length,
-    averageContributionMargin: Number(
-      (items.reduce((sum, item) => sum + item.contributionMargin, 0) / Math.max(items.length, 1)).toFixed(2)
-    ),
-    currency,
-    stars: items.filter((item) => item.category === 'Star').length,
-    puzzles: items.filter((item) => item.category === 'Puzzle').length,
-    plowhorses: items.filter((item) => item.category === 'Plowhorse').length,
-    dogs: items.filter((item) => item.category === 'Dog').length
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) {
+    res.status(500).json({ error: 'Server configuration error: missing API key.' })
+    return
   }
 
-  res.status(200).json({ summary, items })
+  const isUK = market === 'UK'
+  const currency = isUK ? 'GBP' : 'USD'
+  const currencySymbol = isUK ? '\u00a3' : '$'
+  const marketLabel = isUK ? 'UK' : 'US'
+
+  const ukComplianceInstruction = isUK
+    ? `
+For UK menus, also populate the "ukComplianceNote" field for every item. Reference the
+Digital Markets, Competition and Consumers Act 2024 (DMCCA 2024), which from April 2025
+requires all mandatory charges (including service charges) to be included in the displayed
+price. If the item price appears to exclude a service charge, flag it. If price seems
+already inclusive, confirm that. Keep notes under 25 words.`
+    : ''
+
+  const systemPrompt = `You are a menu engineering expert. Analyse restaurant menu items and classify each as Star, Puzzle, Plowhorse, or Dog using the classic Kasavana & Smith matrix:
+- Star: high popularity, high contribution margin
+- Puzzle: low popularity, high contribution margin
+- Plowhorse: high popularity, low contribution margin
+- Dog: low popularity, low contribution margin
+
+Popularity is inferred from: menu position (items listed first sell more), item type (burgers/pizza sell more than offal/unusual items), and price point relative to the menu average (cheaper items tend to sell more).
+
+Contribution margin = price minus food cost amount. Compare each item's margin against the menu average to determine high/low.
+
+Return ONLY valid JSON matching this exact schema. No markdown, no explanation, no code fences:
+{
+  "summary": {
+    "totalItems": number,
+    "averageContributionMargin": number,
+    "currency": "${currency}",
+    "stars": number,
+    "puzzles": number,
+    "plowhorses": number,
+    "dogs": number
+  },
+  "items": [
+    {
+      "name": string,
+      "price": number,
+      "foodCostPct": number,
+      "foodCostAmount": number,
+      "contributionMargin": number,
+      "category": "Star" | "Puzzle" | "Plowhorse" | "Dog",
+      "popularityLevel": "high" | "low",
+      "marginLevel": "high" | "low",
+      "action": string (one sentence, specific and actionable),
+      "marketContext": string (one sentence: typical ${marketLabel} price range for this category, honest about uncertainty),
+      "priceRecommendation": "hold" | "raise" | "cut",
+      "ukComplianceNote": string | null
+    }
+  ]
+}
+
+Rules:
+- action must be specific to the item, not generic. E.g. not "Consider a price increase" but "At ${currencySymbol}16 with 40% food cost, raising by ${currencySymbol}1-2 would add meaningful margin without exceeding competitor range."
+- marketContext: use your training knowledge of typical ${marketLabel} restaurant pricing for this category and tier. Be honest if uncertain.
+- priceRecommendation: "raise" for Plowhorses with room to grow, "cut" for Dogs that may be overpriced, "hold" for Stars and most Puzzles.${ukComplianceInstruction}`
+
+  const userPrompt = `Market: ${marketLabel}\nCurrency: ${currency}\n\nMenu:\n${menuText.trim()}`
+
+  try {
+    const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 4096,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }]
+      })
+    })
+
+    if (!claudeResponse.ok) {
+      const errorBody = await claudeResponse.text()
+      console.error('Claude API error:', claudeResponse.status, errorBody)
+      res.status(502).json({ error: 'Analysis service error. Please try again.' })
+      return
+    }
+
+    const claudeData = await claudeResponse.json()
+    const rawText = claudeData.content?.[0]?.text || ''
+
+    let parsed
+    try {
+      parsed = JSON.parse(rawText)
+    } catch {
+      // Claude occasionally wraps JSON in backticks — strip and retry
+      const stripped = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
+      parsed = JSON.parse(stripped)
+    }
+
+    res.status(200).json(parsed)
+  } catch (err) {
+    console.error('Handler error:', err)
+    res.status(500).json({ error: 'Something went wrong. Please try again.' })
+  }
 }
