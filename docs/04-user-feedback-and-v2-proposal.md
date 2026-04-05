@@ -1,36 +1,37 @@
-# Post-v1 User Feedback Report & v2 Product Proposal
+# Post-v1 User Feedback Report & v2/v3 Product Proposal
 
 > **Author:** Product Owner (Weiche Lin)
 > **Date:** April 2026
-> **Status:** Awaiting sprint planning sign-off
+> **Status:** v2 sprint in progress
 > **Repo:** Wei-power3/menu-engineer
 
 ---
 
 ## Context
 
-Menu Engineer v1 shipped on 5 April 2026 as a 48-hour hackathon build. The tool lets independent restaurant owners paste their menu and receive a Stars / Puzzles / Plowhorses / Dogs analysis (Kasavana & Smith, 1982) with price recommendations and a downloadable PDF.
+Menu Engineer v1 shipped on 5 April 2026 as a 48-hour hackathon build. The tool lets independent restaurant owners input their menu items and receive a Stars / Puzzles / Plowhorses / Dogs analysis (Kasavana & Smith, 1982) with price recommendations and a downloadable PDF.
 
-After sharing the tool with an initial set of users, three clear feedback themes emerged. This document records each theme verbatim, provides a product owner assessment grounded in the current codebase, and proposes a concrete fix for each.
+After sharing the tool with an initial set of users, four feedback themes have emerged. This document records each theme verbatim, provides a product owner assessment grounded in the current codebase, and proposes a concrete fix for each.
 
 ---
 
-## Architecture Note — v1 Regression (Critical)
+## Architecture Decisions Log
 
-Before addressing user feedback, a regression introduced on 5 April 2026 must be acknowledged.
+| Decision | Outcome | Date | Rationale |
+|---|---|---|---|
+| LLM vs. pure JS for analysis | **Pure JS confirmed** | 5 Apr 2026 | Menu engineering is deterministic maths. LLM would produce different classifications for identical inputs — unacceptable for a trust-based tool. |
+| LLM for OCR / photo scan | **Claude Vision permitted** | 5 Apr 2026 | Photo scan is data entry assistance, not analysis. Non-determinism in OCR (misreading a letter) is correctable by the user before analysis runs. |
+| Analysis logic | **Pure JS, no changes** | 5 Apr 2026 | `menuAnalysis.js` classification formula is correct and auditable. Do not modify. |
 
-The latest commit (`be13dad`) removed the Claude API entirely in favour of pure client-side JavaScript (`src/utils/menuAnalysis.js`). This resolved API key and cost concerns but introduced a significant product downgrade:
+---
 
-| Capability | Claude API (original) | Pure JS (current) |
-|---|---|---|
-| Action text per item | AI-generated, context-aware | Template strings |
-| Market context | Real pricing benchmarks | `null` |
-| UK DMCCA compliance notes | Per-item, AI-generated | `null` |
-| Popularity classification | Based on sales intent | Price-position heuristic only |
+## Completed — Week 1 Trust Fixes (shipped 5 Apr 2026)
 
-`CLAUDE.md` still describes the Claude API as the AI engine. This discrepancy between documentation and code must be resolved before v2 work begins.
+Commit `83b193c` delivered all three P1 trust items:
 
-**Decision required:** Restore Claude API for action/context generation, or accept pure-JS and update all documentation accordingly.
+- ✅ **Issue #3** — Per-item reasoning line in `ItemCard.jsx` showing CM vs. menu average and price vs. menu average
+- ✅ **Issue #4** — Kasavana & Smith (1982) citation added to results page
+- ✅ **Issue #5** — Popularity proxy caveat moved from input form to results page
 
 ---
 
@@ -39,64 +40,38 @@ The latest commit (`be13dad`) removed the Claude API entirely in favour of pure 
 ### Verbatim Feedback
 > *"The users don't always know the food costs out of their mind and don't want to calculate because they may know the raw ingredient prices but never calculated how much a burger costs."*
 
-### Current Behaviour
-`MenuInputForm.jsx` requires three fields per row: item name, price, and **food cost %** — all mandatory before analysis runs. There is no calculation aid, no default, and no fallback if a user does not know the percentage.
-
-```jsx
-// MenuInputForm.jsx — food cost % is mandatory, no default or helper
-<input
-  type="number"
-  placeholder="40"
-  min="1"
-  max="99"
-  step="0.1"
-  value={row.foodCostPct}
-  onChange={(e) => updateRow(row.id, 'foodCostPct', e.target.value)}
-  aria-label="Food cost percentage"
-/>
-```
-
 ### Assessment
-This is a **drop-off trigger**. Most independent restaurant operators know what they pay for ingredients (e.g. a beef patty costs $2.50) but have never sat down and costed a dish. Asking for food cost % as a raw number assumes knowledge that typically lives in a spreadsheet or accountant's head — not in the owner's working memory.
+This is a **drop-off trigger**. The form requires food cost % as a mandatory field with no default and no calculation aid. Most independent restaurant operators know what they pay for ingredients but have never costed a finished dish.
 
-A generic fallback (e.g. "burgers are typically 30%") is not credible because food cost % varies significantly by restaurant format and dish category:
+A generic fallback (e.g. "burgers are typically 30%") is not credible because food cost % varies by restaurant format:
 
-| Restaurant Type | Typical food cost % |
-|---|---|
-| QSR / Fast Food | 25–30% |
-| Fast Casual | 28–33% |
-| Casual Dining | 30–35% |
-| Fine Dining | 30–40% |
-| Bar / Beverage-led | 18–25% |
-| Pizzeria | 20–28% |
+| Restaurant Type | Typical food cost % | Source |
+|---|---|---|
+| QSR / Fast Food | 25–30% | National Restaurant Association |
+| Fast Casual | 28–33% | Forte SG COGS Benchmark (2025) |
+| Casual Dining | 30–35% | Forte SG COGS Benchmark (2025) |
+| Fine Dining | 30–40% | Forte SG COGS Benchmark (2025) |
+| Bar / Beverage-led | 18–25% | Forte SG COGS Benchmark (2025) |
+| Pizzeria | 20–28% | Forte SG COGS Benchmark (2025) |
 
-Source: National Restaurant Association industry benchmarks; Forte SG COGS benchmark report (2025).
+### Proposed Fix — Week 2 Sprint
 
-Within each format, dish categories shift the number further: protein-heavy dishes (beef, seafood) run 3–8% higher than the format average; pasta, rice, and desserts run 4–8% lower.
+**Feature A — Restaurant-type selector → benchmark % pre-fill**
 
-### Proposed Fix — Two-Phase Approach
+User picks their restaurant type once at the top of the form. Every food cost % field pre-fills with the format's midpoint benchmark. Label: *"Industry average for casual dining — edit to match your actual costs."* Fully editable. Source cited inline.
 
-**Phase 2a (next sprint) — Restaurant-type benchmark pre-fill**
+**Feature B — Ingredient cost calculator toggle (manual entry path)**
 
-Add a restaurant-type selector at the top of the form (QSR / Fast Casual / Casual Dining / Fine Dining / Bar / Pizzeria). When selected, pre-fill every food cost % field with the format's midpoint benchmark. Label it clearly: *"Industry average for casual dining — edit to match your actual costs."*
-
-This gives users a credible, citable starting point that they can override, rather than leaving the field blank.
-
-**Phase 2b (next sprint) — Ingredient cost calculator toggle**
-
-Add an optional "Calculate for me" toggle per row. When activated, replace the % field with two sub-fields: `Ingredient cost ($)` and `Selling price ($)`. The app computes the % in real time:
+Optional "Calculate for me" toggle per row. Replaces the % field with: `Ingredient cost ($)`. App computes in real time:
 
 ```
-foodCostPct = (ingredientCost / sellingPrice) × 100
+foodCostPct = (ingredientCost / price) × 100
 ```
 
-This matches the mental model of owners who know "the beef for my burger costs $3.20" but not the resulting percentage. The calculated % is shown as a read-only greyed value so the user understands what the app is doing.
+The calculated % displays as a read-only greyed value so the user understands the derivation.
 
-**Phase 3 (deferred) — Recipe builder**
-A per-item ingredient list (e.g. bun $0.30 + beef $2.50 + sauce $0.15) that sums to a total ingredient cost. Larger lift; deferred until paying users justify the development.
-
-**Why this earns trust:**
-The benchmark is explicitly attributed to industry sources, presented as editable (not authoritative), and scoped by restaurant type — matching the specificity users expect from a professional tool. This is analogous to the Big Mac Index methodology: a transparent, consistently-applied benchmark that invites comparison rather than demanding blind acceptance.
+**Feature C (deferred, Phase 3) — Recipe builder**
+Per-item ingredient list that sums to total ingredient cost. Deferred until paying users justify the build.
 
 ---
 
@@ -105,41 +80,29 @@ The benchmark is explicitly attributed to industry sources, presented as editabl
 ### Verbatim Feedback
 > *"The users want to take a photo of their menu and let the item and price be captured and populated for analysis."*
 
-### Current Behaviour
-Data entry is entirely manual. Users must type every item name, price, and food cost % into the structured row form. For a restaurant menu of 15–30 items, this is a significant time investment.
-
 ### Assessment
-Restaurant menus are physical objects that owners handle every day. Photo capture is the natural interaction for this user group — particularly on mobile (iPad/iPhone, the owner's primary device per `CLAUDE.md`).
+Manual entry of 15–30 items is a significant friction barrier, particularly on mobile (iPad/iPhone is the owner's primary device). Photo capture is the natural interaction for this user group.
 
-OCR (Optical Character Recognition) converts image text to machine-readable strings. Two viable approaches were evaluated:
+**OCR options evaluated:**
 
-| Approach | Library / API | Cost | Accuracy on menus | Verdict |
-|---|---|---|---|---|
-| **Client-side OCR** | [Tesseract.js](https://github.com/naptha/tesseract.js) (38k ⭐, actively maintained) | Free | Medium — struggles with decorative / script fonts | Good for MVP fallback |
-| **LLM vision extraction** | Claude Vision API (already in stack) | ~$0.01–0.03 / image | High — understands context, handles decorative fonts, infers item vs. description | Recommended |
-| **Google Cloud Vision** | REST API | ~$1.50 / 1,000 images | High | Adds new vendor dependency unnecessarily |
+| Approach | Cost | Accuracy on menus | Decision |
+|---|---|---|---|
+| Tesseract.js (client-side WebAssembly) | Free | Medium — struggles with decorative fonts | Fallback only |
+| Claude Vision API (already in stack) | ~$0.01–0.03/image | High — handles context and stylised fonts | **Recommended** |
+| Google Cloud Vision | ~$1.50/1,000 images | High | Rejected — unnecessary new vendor |
 
-**Tesseract.js** is a pure JavaScript WebAssembly port of Google's Tesseract OCR engine. It runs entirely in the browser with no server call required and supports 100+ languages. It is suitable as a zero-cost fallback but its accuracy on stylised menu typography is inconsistent. Reference implementations: [freeconvertfileto/image-to-text-js](https://github.com/freeconvertfileto/image-to-text-js), [Raunaksplanet/PNG-OCR-Side-Project](https://github.com/Raunaksplanet/PNG-OCR-Side-Project).
+### Proposed Fix — Week 2 Sprint
 
-**Claude Vision** is the recommended path because it reuses the existing API infrastructure, handles real-world menu formats reliably, and can extract structured data rather than raw text.
+Camera/upload button above the form → image sent to Claude Vision API → name + price rows auto-populated → food cost % left blank and highlighted for user input → user reviews, corrects, then analyses.
 
-### Proposed Fix — Claude Vision Menu Scan
-
-**Extraction prompt (to be added to `api/analyze.js` or a new `api/scan.js`):**
+**Extraction prompt for `api/scan.js` (new endpoint):**
 ```
 Extract all food and drink items from this menu image. Return only a JSON array:
 [{"name": "House Burger", "price": 16.00}, ...]
-Include only items that have a visible price. Do not include section headings, descriptions, or prices without an associated item name.
+Include only items that have a visible price. Exclude section headings and descriptions.
 ```
 
-**UX flow:**
-1. Camera icon button above the form table opens the native file picker with `capture="environment"` (triggers camera on mobile)
-2. "Scanning your menu…" loading state while API processes the image
-3. Name + price rows are auto-populated; food cost % column is left blank and highlighted
-4. User reviews and corrects any misreads, then adds food cost % (via benchmark pre-fill or ingredient calculator from Feedback 1)
-5. Analyse as normal
-
-**Important constraint:** Food cost % is intentionally *not* extracted from the photo. Menus do not print cost data, and this keeps the user engaged in the one field that requires their operational knowledge.
+Food cost % is intentionally not extracted — menus don't print cost data, and this keeps the owner engaged in the one field requiring their operational knowledge.
 
 ---
 
@@ -148,99 +111,144 @@ Include only items that have a visible price. Do not include section headings, d
 ### Verbatim Feedback
 > *"They don't know if the analysis is trustworthy. Why would they trust software saying 'you should increase your price'? What's the explanation or ground of this recommendation?"*
 
-### Current Behaviour
+### Status: RESOLVED in Week 1 (commit `83b193c`)
 
-Action text is generated from template strings in `menuAnalysis.js`:
+Three trust layers shipped:
+1. Per-item reasoning line exposing the classification maths
+2. Kasavana & Smith (1982) citation on results page
+3. Popularity proxy caveat moved to results page with honest methodology note
 
-```js
-// menuAnalysis.js — current template actions, no reasoning shown
-Plowhorse: (item, sym) =>
-  `${item.name} is popular but thin on margin at ${sym}${item.contributionMargin.toFixed(2)} CM.
-   Try raising the price by ${sym}1–2 or reducing the portion slightly.`,
-```
+---
 
-In `ItemCard.jsx`, the recommendation label ("Raise price", "Hold price", "Cut or rethink") is shown next to the item name with no explanation of how the classification was reached:
+## Feedback 4 — "I want to know what my neighbours are charging and whether my costs are about to change" *(New — Manhattan operator)*
 
-```jsx
-// ItemCard.jsx — recommendation label with no reasoning context
-<span className="muted">{getRecommendationLabel(item.priceRecommendation)}</span>
-<p>{item.action}</p>
-```
-
-The `marketContext` and `ukComplianceNote` fields exist in the data contract but both return `null` in the current pure-JS implementation.
-
-A single disclaimer exists at the bottom of the input form:
-
-> *"Popularity is estimated from relative price — cheaper items typically sell more."*
-
-This is buried, passive, and does not appear near the results where trust decisions are made.
+### Verbatim Feedback
+> *"A New York Manhattan-based restaurant owner doesn't feel this is credible or useful. The industry knows that the cost of a dish should hopefully be between 15–30%. He wants to know: burger prices in the neighbourhood and ingredient price changes due to season, tariff, etc. It seems the cost doesn't have to be exact but the trend is important and the 'benchmark' of other shops."*
 
 ### Assessment
-This is the deepest trust problem in the product. Two compounding issues:
 
-1. **The recommendation is asserted, not explained.** Users are told what to do but not why. A restaurant owner who has run their business for 10 years will not take price advice from software unless they can see the logic.
+This is the most strategically significant piece of feedback received. It reframes the entire product value proposition.
 
-2. **The popularity proxy is a weak heuristic.** The current classification uses `price <= avgPrice → high popularity`. This is a known limitation documented in the code comments but invisible to the user. It means two items with identical real-world sales could receive different classifications purely because one is priced below average.
+**What the tool currently does:**
+> Compares your menu against itself. "Your burger's margin is below average *of your own menu*."
 
-### Proposed Fix — Three Layers of Trust
+**What this user wants:**
+> Compares your menu against the market. "Your burger is priced below the neighbourhood average, and beef wholesale costs are up 12% this month."
 
-**Layer 1 — Show the maths (quick win, no logic changes required)**
+He is correct that the 15–30% food cost rule is already known by every experienced operator. It is not the insight. The insight is:
+1. **Competitive price context** — what are comparable restaurants nearby charging for the same dish?
+2. **Ingredient cost trends** — are my input costs about to rise due to seasonality, tariffs, or supply shocks?
 
-All the data needed to explain the classification already exists in `menuAnalysis.js`. Surface it in `ItemCard.jsx` beneath each item:
+This transforms Menu Engineer from a one-time calculator into a **recurring decision-support tool** — something an owner checks monthly, not once. That is where retention and paid subscription revenue live.
 
-> *"Your contribution margin is $9.60. Your menu average is $8.20. Because yours is above average, this item is classified as **high-margin**."*
+### Two Distinct Features Required
 
-This requires no new computation — only a display change in `ItemCard.jsx`.
+**Feature 1 — Neighbourhood price benchmarking**
 
-**Layer 2 — Cite the academic framework (credibility, one line of UI)**
+Data source: **Google Places API** — returns menu prices for nearby restaurants by cuisine type. Covers dense urban markets (Manhattan, London) extremely well.
 
-The Kasavana & Smith (1982) framework is the industry standard for menu profitability analysis, first published at Cornell University's School of Hotel Administration. This citation is already referenced in `perplexity.md` and `docs/01-problem-research.md` but is invisible to end users.
+User inputs zip code / postcode at onboarding. For each item analysed, the results show:
+> *"Burgers in your area average $17.40. Your price is $16.00 — you have room to raise without exceeding local norms."*
 
-Add a persistent, non-intrusive attribution line on the results page:
+This is the `marketContext` field that currently returns `null`. It now has a real, deterministic data source.
 
-> *"Analysis based on the Kasavana & Smith (1982) menu engineering framework — the industry standard since Cornell University."*
+- API cost: ~$0.017 per Places query
+- Deterministic: same zip + same dish type = same benchmark every time
+- No LLM involved
 
-**Layer 3 — Move and reframe the popularity caveat**
+**Feature 2 — Ingredient cost trend feed**
 
-Move the popularity proxy disclaimer from the bottom of the input form to the results page, as a visible-but-honest caveat adjacent to the matrix:
+Data source: **USDA Agricultural Marketing Service (AMS)** — free weekly wholesale price reports for beef, poultry, produce, dairy, broken down by cut and region. No API key required.
 
-> *"⚠️ Popularity is estimated from price position (cheaper items typically sell more). For higher accuracy, add weekly cover counts per item — coming in a future update."*
+Already planned in the roadmap as Phase 2 (`CLAUDE.md`). This feedback confirms it is the right priority.
 
-This does two things simultaneously: it is honest (which builds trust), and it seeds the next premium feature (real sales data input).
+What it shows per item:
+> *"Ground beef wholesale prices in the Northeast are up 12% over the last 4 weeks."*
+> *"Seasonal alert: tomato prices typically spike 20–30% in January–February."*
+
+- Cost: $0 (free government API)
+- Update frequency: weekly
+- Scope: US only initially; UK equivalent is AHDB (Agriculture and Horticulture Development Board)
+
+### Why This Does Not Conflict With the Pure-JS Decision
+
+Both features are **deterministic data lookups**, not AI inference:
+- Google Places returns a real average price from real listings
+- USDA AMS returns a real wholesale price from real market reports
+
+The analysis logic in `menuAnalysis.js` remains untouched. These features populate the `marketContext` field with real data instead of `null`.
+
+### Scope Decision
+
+This is **v3 work**, not v2. Rationale:
+- v2 must first remove the input barrier (Feedback 1 + 2) so more users can complete the flow
+- Google Places API requires a new API key, billing setup, and a location input field at onboarding
+- USDA AMS requires a new data-fetching layer and caching strategy
+- Neither should block the immediate food cost usability fixes
 
 ---
 
-## Prioritised v2 Backlog
+## Sprint Plan
 
-| Priority | Feature | Linked Feedback | Effort Estimate |
+### ✅ Week 1 — Trust (DONE)
+- Issues #3, #4, #5 shipped in commit `83b193c`
+- Pure-JS architecture confirmed
+
+### 🔨 Week 2 — Remove Input Barrier (IN PROGRESS)
+
+| Feature | Issue | Notes |
+|---|---|---|
+| Restaurant-type selector → benchmark % pre-fill | To be created | Feedback 1 — Feature A |
+| Ingredient cost calculator toggle | To be created | Feedback 1 — Feature B |
+| Menu photo scan (Claude Vision → auto-populate) | To be created | Feedback 2 |
+
+### 💳 Week 3 — Revenue
+- Stripe payment gate on PDF download (stub already in `PdfDownloadButton.jsx`)
+- Community post: r/restaurantowners, BigHospitality.co.uk (no-code — do in parallel now)
+
+### 🌍 Week 4+ — Market-Aware Analysis (v3)
+
+| Feature | Data source | Cost | Effort |
 |---|---|---|---|
-| 🔴 P0 | Resolve LLM vs. pure-JS architecture decision | Prerequisite | 1 hr decision |
-| 🟠 P1 | Restaurant-type selector → benchmark food cost % pre-fill | Feedback 1 | Small |
-| 🟠 P1 | Show calculation reasoning in ItemCard + cite Kasavana & Smith | Feedback 3 | Small |
-| 🟠 P1 | Move popularity caveat to results page | Feedback 3 | XS |
-| 🟡 P2 | Ingredient cost calculator toggle (raw cost → auto %) | Feedback 1 | Medium |
-| 🟡 P2 | Menu photo scan via Claude Vision → auto-populate rows | Feedback 2 | Medium |
-| 🟡 P2 | Stripe payment gate (stub already in `PdfDownloadButton.jsx`) | Monetisation | Small |
-| 🟢 P3 | Real popularity input (weekly covers per item) | Feedback 3 | Medium |
-| 🟢 P3 | USDA AMS ingredient cost feed (replaces marketContext null) | Data quality | Large |
-| 🟢 P3 | Recipe builder (per-item ingredient list) | Feedback 1 | Large |
-| ⬜ P4 | Saved reports (Supabase, post paying-user threshold) | Roadmap | Large |
+| Neighbourhood price benchmarking | Google Places API | ~$0.02/query | Medium |
+| Ingredient cost trend feed | USDA AMS API | Free | Medium |
+| Seasonal price alerts | USDA AMS historical | Free | Small (once USDA wired) |
+| Tariff impact alerts | USDA AMS + hardcoded table initially | Free | Small |
+| UK ingredient trends | AHDB API | Free | Small (after US) |
 
 ---
 
-## v1 Definition of Done — Status Update
+## Full Prioritised Backlog
+
+| Priority | Feature | Feedback | Sprint |
+|---|---|---|---|
+| ✅ Done | Trust reasoning in ItemCard | Feedback 3 | Week 1 |
+| ✅ Done | Kasavana & Smith citation | Feedback 3 | Week 1 |
+| ✅ Done | Popularity caveat to results page | Feedback 3 | Week 1 |
+| 🔨 Next | Restaurant-type benchmark % pre-fill | Feedback 1 | Week 2 |
+| 🔨 Next | Ingredient cost calculator toggle | Feedback 1 | Week 2 |
+| 🔨 Next | Menu photo scan via Claude Vision | Feedback 2 | Week 2 |
+| 🟡 Soon | Stripe payment gate | Monetisation | Week 3 |
+| 🟡 Soon | Community post (r/restaurantowners) | v1 DoD | Now (no-code) |
+| 🟢 Later | Neighbourhood price benchmarking (Google Places) | Feedback 4 | Week 4+ |
+| 🟢 Later | USDA AMS ingredient cost trend feed | Feedback 4 | Week 4+ |
+| 🟢 Later | Real popularity input (weekly covers) | Feedback 3 | Week 4+ |
+| 🟢 Later | Recipe builder (per-item ingredient list) | Feedback 1 | Phase 3 |
+| ⬜ Deferred | Saved reports (Supabase) | Roadmap | Post revenue |
+
+---
+
+## v1 Definition of Done — Status
 
 ```
 - [x] Tool live at a public Vercel URL
 - [x] Works on mobile browser (iPad/iPhone)
 - [x] US mode: full matrix + PDF + sortable table
-- [x] UK mode: DMCCA 2024 compliance notes per item  ← NOTE: currently null in pure-JS build
+- [x] UK mode: DMCCA 2024 compliance notes  ← deferred to v3 (requires real data source)
 - [ ] At least 1 real user has used it
-- [ ] At least 1 post in a hospitality community (r/restaurantowners, BigHospitality.co.uk)
+- [ ] At least 1 post in a hospitality community
 ```
-
-Community post remains the last unchecked v1 item. It should be completed before v2 development begins to validate the core product with a broader audience.
 
 ---
 
-*This document was produced by the product owner on 5 April 2026 based on initial user feedback sessions. It supersedes the informal notes in `CLAUDE.md` under "Next Session — Post-v1 Priorities".*
+*Last updated: 5 April 2026. Feedback 4 (Manhattan operator) added. Sprint plan updated to reflect Week 1 completion and Week 2 scope.*
