@@ -1,5 +1,6 @@
-// Menu photo scan — Claude Vision extracts item names + prices from a menu image.
-// Requires ANTHROPIC_API_KEY in Vercel environment variables.
+// Menu photo scan — Gemini 2.5 Flash-Lite extracts item names + prices from a menu image.
+// Requires GEMINI_API_KEY in Vercel environment variables.
+// Get a free key at: https://aistudio.google.com/apikey
 // Returns { items: [{name, price}, ...] } or { items: [], error: string }
 
 export default async function handler(req, res) {
@@ -13,9 +14,9 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'image and mediaType are required.' })
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY
+  const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) {
-    return res.status(500).json({ error: 'Menu scan requires an Anthropic API key. Please add ANTHROPIC_API_KEY to your Vercel environment variables.' })
+    return res.status(500).json({ error: 'Menu scan requires a Gemini API key. Please add GEMINI_API_KEY to your Vercel environment variables.' })
   }
 
   const prompt = `Extract all food and drink items from this menu image.
@@ -28,41 +29,43 @@ Rules:
 - If you cannot read the menu clearly, return an empty array []`
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 1024,
-        messages: [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'image',
-                source: { type: 'base64', media_type: mediaType, data: image },
-              },
-              { type: 'text', text: prompt },
-            ],
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  inline_data: {
+                    mime_type: mediaType,
+                    data: image,
+                  },
+                },
+                { text: prompt },
+              ],
+            },
+          ],
+          generationConfig: {
+            temperature: 0,
+            maxOutputTokens: 1024,
           },
-        ],
-      }),
-    })
+        }),
+      }
+    )
 
     if (!response.ok) {
       const errBody = await response.text()
-      console.error('Claude Vision API error:', response.status, errBody)
+      console.error('Gemini Vision API error:', response.status, errBody)
       return res.status(502).json({
         error: 'Could not scan menu — please add items manually or try again.',
       })
     }
 
     const data = await response.json()
-    const rawText = data.content?.[0]?.text || ''
+    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
 
     let items
     try {
