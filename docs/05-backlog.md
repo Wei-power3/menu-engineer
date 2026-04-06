@@ -1,8 +1,8 @@
 # Menu Engineer — Product Backlog
 
 > **Single source of truth for all planned work.**
-> Feedback rationale and user research live in `docs/04-user-feedback-and-v2-proposal.md`.
-> Architecture decisions live in `docs/04-user-feedback-and-v2-proposal.md` → Architecture Decisions Log.
+> Feedback rationale lives in `docs/04-user-feedback-and-v2-proposal.md`.
+> Session-level research lives in `docs/06-user-research/`.
 
 **Last updated:** 6 April 2026
 
@@ -14,7 +14,7 @@
 |---|---|---|
 | Week 1 | Trust & credibility | ✅ Done |
 | Week 2 | Remove input barrier | ✅ Done |
-| Week 3 | Revenue | 🔨 Next |
+| Week 3 | Revenue + trust fixes for scaled operators | 🔨 Next |
 | Week 4+ | Market-aware analysis (v3) | 📋 Planned |
 
 ---
@@ -32,12 +32,15 @@
 
 ---
 
-## 🔨 Week 3 — Revenue
+## 🔨 Week 3 — Revenue + Trust Fixes
 
 | Priority | Feature | Notes | Source |
 |---|---|---|---|
 | 🔴 P0 | **Post in r/restaurantowners + BigHospitality.co.uk** | No-code. Last unchecked v1 DoD item. Do today. | v1 DoD |
-| 🔴 P0 | **Stripe payment gate on PDF download** | Stub already exists in `PdfDownloadButton.jsx`. Small lift. Target: $5–10/report. | Roadmap |
+| 🔴 P0 | **Stripe gate on real sales volume input (not PDF)** | Scope change after 7th Street research. Volume input is the premium feature that scaled operators care about. | 7th Street research |
+| 🟠 P1 | **Real sales volume input (weekly covers per item)** | Promoted from later backlog. Single strongest trust unlock for scaled operators. | 7th Street research |
+| 🟠 P1 | **Empty state copy for Zero Stars / Zero Dogs** | Add explicit guidance when quadrants are empty. GM provided near-final copy. | 7th Street research |
+| 🟠 P1 | **Vary recommendation copy by item rank/type** | Reduce templated feel. Different advice for top vs. bottom items within a quadrant; beverages/sides softer than burgers. | 7th Street research |
 
 ---
 
@@ -45,14 +48,14 @@
 
 | Priority | Feature | Notes | Source |
 |---|---|---|---|
-| 🟡 P2 | **Drag/drop + clipboard paste for menu photo scan** | Desktop progressive enhancement. Keep current file picker + camera as primary (best on mobile). Add drop zone UI around scan button. Clipboard paste (`ctrl+v`) for screenshot workflow. Degrades gracefully. | UX feedback 6 Apr |
-| 🟡 P2 | **Privacy note near scan button** | One line: *"Photos are never stored — processed instantly and discarded."* Builds trust with owners uploading proprietary pricing. | Internal |
-| 🟡 P2 | **Real popularity input (weekly covers per item)** | Replaces price-position heuristic with actual sales data. Seeds premium tier. | Feedback 3 |
+| 🟡 P2 | **Drag/drop + clipboard paste for menu photo scan** | Desktop progressive enhancement. Keep file picker + camera as primary (best on mobile). Add drop zone UI around scan button. Clipboard paste (`ctrl+v`) for screenshot workflow. | UX feedback 6 Apr |
+| 🟡 P2 | **Privacy note near scan button** | One line: *"Photos are never stored — processed instantly and discarded."* | Internal |
 | 🟡 P2 | **"Analyse another menu" reset flow** | Clear restart path after viewing results. | UX |
+| 🟡 P2 | **Price-floor-aware recommendation tone for sub-$2 items** | For water, sauce, etc: *"Consider raising price — but weigh against brand positioning and customer perception."* | 7th Street research |
 
 ---
 
-## 🌍 Week 5+ — Market-Aware Analysis (v3, Issue #6)
+## 🌍 Week 5+ — Market-Aware Analysis (v3)
 
 > Full spec in [GitHub Issue #6](https://github.com/Wei-power3/menu-engineer/issues/6) and `docs/04-user-feedback-and-v2-proposal.md` → Feedback 4.
 
@@ -64,6 +67,7 @@
 | 🟢 P3 | Seasonal price alerts | USDA AMS historical | Free | Small |
 | 🟢 P3 | Tariff impact alerts | USDA AMS + hardcoded table | Free | Small |
 | 🟢 P3 | UK ingredient trends | AHDB API | Free | Small |
+| 🟢 P3 | Bundle / combo analysis | Internal logic + new data model | Free | Large |
 
 ---
 
@@ -85,6 +89,6 @@
 - [x] Works on mobile browser (iPad/iPhone)
 - [x] US mode: full matrix + PDF + sortable table
 - [x] UK mode: market toggle present (DMCCA notes deferred to v3)
-- [ ] At least 1 real user has used it  ← do today
+- [ ] At least 1 real user has used it  ← now effectively true, update when desired
 - [ ] At least 1 post in a hospitality community  ← do today
 ```
