@@ -14,7 +14,7 @@
 |---|---|---|
 | Week 1 | Trust & credibility | ✅ Done |
 | Week 2 | Remove input barrier | ✅ Done |
-| Week 3 | Revenue + trust fixes for scaled operators | 🔨 Next |
+| Week 3 | Bug fixes + revenue + trust copy | 🔨 Next |
 | Week 4+ | Market-aware analysis (v3) | 📋 Planned |
 
 ---
@@ -29,18 +29,34 @@
 | — | Restaurant-type selector → benchmark food cost % pre-fill | `b7a9c0c` | Week 2 |
 | — | Ingredient cost calculator toggle (raw cost → auto %) | `b7a9c0c` | Week 2 |
 | — | Menu photo scan via Gemini 2.5 Flash-Lite → auto-populate rows | `b7a9c0c` + `830f653` | Week 2 |
+| — | “Analyse another menu” reset flow | `b7a9c0c` | Week 2 — validated working |
 
 ---
 
-## 🔨 Week 3 — Revenue + Trust Fixes
+## 🔨 Week 3 — Bug Fixes + Revenue + Trust Copy
 
-| Priority | Feature | Notes | Source |
-|---|---|---|---|
-| 🔴 P0 | **Post in r/restaurantowners + BigHospitality.co.uk** | No-code. Last unchecked v1 DoD item. Do today. | v1 DoD |
-| 🔴 P0 | **Stripe gate on real sales volume input (not PDF)** | Scope change after 7th Street research. Volume input is the premium feature that scaled operators care about. | 7th Street research |
-| 🟠 P1 | **Real sales volume input (weekly covers per item)** | Promoted from later backlog. Single strongest trust unlock for scaled operators. | 7th Street research |
-| 🟠 P1 | **Empty state copy for Zero Stars / Zero Dogs** | Add explicit guidance when quadrants are empty. GM provided near-final copy. | 7th Street research |
-| 🟠 P1 | **Vary recommendation copy by item rank/type** | Reduce templated feel. Different advice for top vs. bottom items within a quadrant; beverages/sides softer than burgers. | 7th Street research |
+### 🔴 P0 Bugs (fix before next user test)
+
+| Feature | Notes | Source |
+|---|---|---|
+| **Sticky Analyse CTA when 5+ rows in form** | Analyse button hidden below fold. Add fixed bottom bar visible at all times once 1+ valid rows exist. Disappears after analysis runs. | Michael E. |
+| **New rows inherit selected benchmark %** | `addRow()` reads `FOOD_COST_BENCHMARKS[selectedType]?.pct`. New rows show benchmark value, not 40% hardcode. | Michael E. |
+
+### 🔴 P0 Non-code
+
+| Feature | Notes | Source |
+|---|---|---|
+| **Post in r/restaurantowners + BigHospitality.co.uk** | No-code. Last unchecked v1 DoD item. Do today. | v1 DoD |
+| **Stripe gate on real sales volume input** | Volume input is the premium feature. Gating it creates pull, not friction. | 7th Street research |
+
+### 🟠 P1 (same sprint)
+
+| Feature | Notes | Source |
+|---|---|---|
+| **Blank gap at top of Puzzles card** | Filter null items before render. Check `:first-child` top margin. | Michael E. |
+| **Real sales volume input (weekly covers per item)** | Single strongest trust unlock for scaled operators. The paid feature. | 7th Street research |
+| **Empty state copy for Zero Stars / Zero Dogs** | Zero Stars is systemic — default output without volume data. GM copy: *“No Stars yet. This means no item is both high-margin and high-volume — either a pricing opportunity or a data gap.”* | 7th Street + Michael E. |
+| **Vary recommendation copy by item rank/type** | Confirmed by 3 independent users. $0.73 sauce and $9.94 combo must not receive identical advice. Vary by margin rank within quadrant + item price tier. | All 3 sessions |
 
 ---
 
@@ -48,16 +64,16 @@
 
 | Priority | Feature | Notes | Source |
 |---|---|---|---|
-| 🟡 P2 | **Drag/drop + clipboard paste for menu photo scan** | Desktop progressive enhancement. Keep file picker + camera as primary (best on mobile). Add drop zone UI around scan button. Clipboard paste (`ctrl+v`) for screenshot workflow. | UX feedback 6 Apr |
-| 🟡 P2 | **Privacy note near scan button** | One line: *"Photos are never stored — processed instantly and discarded."* | Internal |
-| 🟡 P2 | **"Analyse another menu" reset flow** | Clear restart path after viewing results. | UX |
-| 🟡 P2 | **Price-floor-aware recommendation tone for sub-$2 items** | For water, sauce, etc: *"Consider raising price — but weigh against brand positioning and customer perception."* | 7th Street research |
+| 🟡 P2 | **Drag/drop + clipboard paste for menu photo scan** | Desktop progressive enhancement. Keep file picker + camera as primary. Add drop zone + `ctrl+v` paste. | UX feedback |
+| 🟡 P2 | **Privacy note near scan button** | *“Photos are never stored — processed instantly and discarded.”* | Internal |
+| 🟡 P2 | **Price-floor-aware recommendation tone for sub-$2 items** | *“Consider raising price — but weigh against brand positioning.”* | 7th Street research |
+| 🟢 P3 | **Remember last-used restaurant type across sessions** | localStorage optional convenience. Low priority until retention matters. | Michael E. |
 
 ---
 
 ## 🌍 Week 5+ — Market-Aware Analysis (v3)
 
-> Full spec in [GitHub Issue #6](https://github.com/Wei-power3/menu-engineer/issues/6) and `docs/04-user-feedback-and-v2-proposal.md` → Feedback 4.
+> Full spec in [GitHub Issue #6](https://github.com/Wei-power3/menu-engineer/issues/6).
 
 | Priority | Feature | Data source | Cost | Effort |
 |---|---|---|---|---|
@@ -89,6 +105,6 @@
 - [x] Works on mobile browser (iPad/iPhone)
 - [x] US mode: full matrix + PDF + sortable table
 - [x] UK mode: market toggle present (DMCCA notes deferred to v3)
-- [ ] At least 1 real user has used it  ← now effectively true, update when desired
+- [x] At least 1 real user has used it
 - [ ] At least 1 post in a hospitality community  ← do today
 ```
