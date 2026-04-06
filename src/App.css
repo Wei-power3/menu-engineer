@@ -322,6 +322,11 @@ body {
   gap: 0.3rem;
 }
 
+.item:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
 .item strong {
   font-size: 0.95rem;
 }
@@ -814,4 +819,32 @@ section > h3 {
 .input-highlight:focus {
   border-color: #d97706 !important;
   box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2) !important;
+}
+
+/* =============================================
+   STICKY ANALYSE BAR
+   ============================================= */
+.sticky-analyse-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0.85rem 1rem;
+  background: #fff;
+  border-top: 1px solid #e5e7eb;
+  box-shadow: 0 -4px 12px oklch(0.2 0.01 80 / 0.08);
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+}
+
+.sticky-analyse-btn {
+  max-width: 480px;
+  width: 100%;
+  margin: 0;
+}
+
+/* Push form content above the sticky bar when it's visible */
+.input-page:has(.sticky-analyse-bar) .input-form {
+  padding-bottom: 80px;
 }

@@ -20,7 +20,7 @@ export default function AnalysisMatrix({
       <h3>Menu Matrix</h3>
       <div className="grid">
         {categoryOrder.map((category) => {
-          const items = groupedItems[category] || []
+          const items = (groupedItems[category] || []).filter((item) => item && item.name)
 
           return (
             <article key={category} className="card">

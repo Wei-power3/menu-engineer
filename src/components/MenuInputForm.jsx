@@ -51,7 +51,10 @@ export default function MenuInputForm({ market, onMarketChange, onSubmit }) {
   const updateRow = (id, field, value) =>
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, [field]: value } : r)))
 
-  const addRow = () => setRows((prev) => [...prev, makeRow()])
+  const addRow = () => {
+    const pct = selectedType ? String(FOOD_COST_BENCHMARKS[selectedType].pct) : ''
+    setRows((prev) => [...prev, { ...makeRow(), foodCostPct: pct }])
+  }
 
   const removeRow = (id) =>
     setRows((prev) => (prev.length > 1 ? prev.filter((r) => r.id !== id) : prev))
@@ -336,6 +339,19 @@ export default function MenuInputForm({ market, onMarketChange, onSubmit }) {
             : 'Add at least 2 items to analyse'}
         </button>
       </form>
+
+      {/* Sticky CTA — keeps Analyse button visible when rows push it below fold */}
+      {validRows.length >= 2 && (
+        <div className="sticky-analyse-bar">
+          <button
+            type="button"
+            className="button submit-button sticky-analyse-btn"
+            onClick={handleSubmit}
+          >
+            Analyse {validRows.length} items
+          </button>
+        </div>
+      )}
     </div>
   )
 }
